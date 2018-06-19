@@ -1,0 +1,11 @@
+[Unit]
+Description=Forward Proxy Server written in node.js
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/forward-proxy-server start --log /var/log/forward-proxy-server
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
