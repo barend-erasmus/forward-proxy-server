@@ -1,4 +1,6 @@
 ---
+# forwardTo: 1.1.1.1:3000
 # hostname: 0.0.0.0
 # log: D:/temp
+# mode: raw-tls
 # port: 1080
