@@ -5,7 +5,7 @@
   "scripts": {
     "build": "gulp build & tsc",
     "lint": "tslint ./src/**/*.ts --fix --exclude ./src/**/*.d.ts",
-    "start": "npm run build & node --inspect ./dist/app.js start --forwardTo 0.0.0.0:2000 --mode raw-tls"
+    "start": "npm run build & node --inspect ./dist/app.js start --forwardTo 0.0.0.0:2000 --mode tls-raw"
   },
   "repository": {
     "type": "git",

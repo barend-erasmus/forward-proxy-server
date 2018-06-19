@@ -39,9 +39,7 @@ export function start(
 
 function rawToTLS(forwardToHostname: string, forwardToPort: number, hostname: string, port: number): void {
     const socketOutput: tls.TLSSocket = new tls.TLSSocket(new net.Socket(), {
-        secureContext: tls.createSecureContext({
 
-        }),
     });
 
     socketOutput.connect(forwardToPort, forwardToHostname, () => { });
@@ -61,18 +59,18 @@ function rawToTLS(forwardToHostname: string, forwardToPort: number, hostname: st
 }
 
 function tlsToRaw(forwardToHostname: string, forwardToPort: number, hostname: string, port: number): void {
-    const socketOutput = new net.Socket();
+    // const socketOutput = new net.Socket();
 
-    socketOutput.connect(forwardToPort, forwardToHostname, () => { });
+    // socketOutput.connect(forwardToPort, forwardToHostname, () => { });
 
     const serverInput: tls.Server = tls.createServer({
-        cert: fs.readFileSync('server-cert.pem'),
-        key: fs.readFileSync('server-key.pem'),
+        passphrase: 'password',
+        pfx: fs.readFileSync('example.pfx'),
         rejectUnauthorized: true,
     }, (socketInput: net.Socket) =>
             onConnection(
                 socketInput,
-                socketOutput,
+                null, // socketOutput,
             ));
 
     hostname = hostname ? hostname : '0.0.0.0';
