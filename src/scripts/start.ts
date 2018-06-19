@@ -38,11 +38,15 @@ export function start(
 }
 
 function rawToTLS(forwardToHostname: string, forwardToPort: number, hostname: string, port: number): void {
-    const socketOutput: tls.TLSSocket = new tls.TLSSocket(new net.Socket(), {
+    const socketOutput: tls.TLSSocket = tls.connect(forwardToPort, {
+        host: forwardToHostname,
+        passphrase: 'password',
+        pfx: fs.readFileSync('example.pfx'),
+    }, () => {
+        console.log(socketOutput.authorized);
 
+        winston.info(`Connected to destination`);
     });
-
-    socketOutput.connect(forwardToPort, forwardToHostname, () => { });
 
     const serverInput: net.Server = net.createServer((socketInput: net.Socket) =>
         onConnection(
@@ -66,7 +70,7 @@ function tlsToRaw(forwardToHostname: string, forwardToPort: number, hostname: st
     const serverInput: tls.Server = tls.createServer({
         passphrase: 'password',
         pfx: fs.readFileSync('example.pfx'),
-        rejectUnauthorized: true,
+        // rejectUnauthorized: true,
     }, (socketInput: net.Socket) =>
             onConnection(
                 socketInput,
@@ -85,11 +89,31 @@ function onConnection(
     socketInput: net.Socket | tls.TLSSocket,
     socketOutput: net.Socket | tls.TLSSocket,
 ): void {
-    socketInput.on('data', (data: Buffer) => {
-        socketOutput.write(data);
-    });
+    if (socketInput) {
+        socketInput.on('data', (data: Buffer) => {
+            winston.info(`Client sending data`, {
+                bytes: data.length,
+                clientAddress: socketInput.remoteAddress,
+                clientPort: socketInput.remotePort,
+            });
 
-    socketOutput.on('data', (data: Buffer) => {
-        socketInput.write(data);
-    });
+            if (socketOutput) {
+                socketOutput.write(data);
+            }
+        });
+    }
+
+    if (socketOutput) {
+        socketOutput.on('data', (data: Buffer) => {
+            winston.info(`Client receiving data`, {
+                bytes: data.length,
+                clientAddress: socketInput.remoteAddress,
+                clientPort: socketInput.remotePort,
+            });
+
+            if (socketInput) {
+                socketInput.write(data);
+            }
+        });
+    }
 }
