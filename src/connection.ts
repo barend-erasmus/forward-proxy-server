@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as net from 'net';
+import * as path from 'path';
 import * as tls from 'tls';
 import * as winston from 'winston';
 
@@ -62,8 +63,8 @@ export class Connection {
             case 'tls-raw':
                 this.connectToDestinationRaw();
                 break;
-            case 'tls-tls':
             case 'raw-tls':
+            case 'tls-tls':
                 this.connectToDestinationTLS();
                 break;
         }
@@ -79,7 +80,7 @@ export class Connection {
         this.destinationSocket = tls.connect(this.forwardToPort, {
             host: this.forwardToHostname,
             passphrase: 'password',
-            pfx: fs.readFileSync('example.pfx'),
+            pfx: fs.readFileSync(path.join(__dirname, '..', 'example.pfx')),
             rejectUnauthorized: false,
         }, () => {
             this.onDestinationConnection(null);

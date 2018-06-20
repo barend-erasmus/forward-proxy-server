@@ -56,7 +56,7 @@ function rawServer(forwardToHostname: string, forwardToPort: number, hostname: s
 function tlsServer(forwardToHostname: string, forwardToPort: number, hostname: string, mode: string, port: number): void {
     const server: tls.Server = tls.createServer({
         passphrase: 'password',
-        pfx: fs.readFileSync('example.pfx'),
+        pfx: fs.readFileSync(path.join(__dirname, '..', '..', 'example.pfx')),
         rejectUnauthorized: false,
     }, (socket: net.Socket) => {
         const connection: Connection = new Connection(socket, forwardToHostname, forwardToPort, mode);

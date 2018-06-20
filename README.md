@@ -14,7 +14,7 @@
 
 ## Running
 
-`forward-proxy-server start --hostname 0.0.0.0 --log ./ --port 1337`
+`forward-proxy-server start --hostname 0.0.0.0 --log ./ --mode raw-tls --port 1337`
 
 `forward-proxy-server start --config my-config.yaml`
 
@@ -24,5 +24,6 @@
 ---
 hostname: 0.0.0.0
 log: D:/temp
+mode: raw-raw | raw-tls | tls-tls | tls-raw
 port: 1080
 ```

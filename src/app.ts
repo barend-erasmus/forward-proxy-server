@@ -16,7 +16,7 @@ commander
     .option('-f --forwardTo <forwardTo>', 'Forward To')
     .option('-h --hostname <hostname>', 'Hostname')
     .option('-l --log <log>', 'Log')
-    .option('-m --mode <mode>', 'Mode')
+    .option('-m --mode <mode>', 'Mode (raw-raw | raw-tls | tls-tls | tls-raw)')
     .option('-p --port <port>', 'Port')
     .action((command: any) => {
         if (command.config) {

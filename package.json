@@ -1,13 +1,11 @@
 {
   "name": "forward-proxy-server",
-  "version": "1.0.12",
+  "version": "1.0.1",
   "description": "Forward Proxy Server written in node.js",
   "scripts": {
     "build": "gulp build & tsc",
     "lint": "tslint ./src/**/*.ts --fix --exclude ./src/**/*.d.ts",
-    "start": "npm run build & node --inspect ./dist/app.js start --forwardTo 0.0.0.0:2000 --mode tls-raw",
-    "start-1": "node ./dist/app.js start --forwardTo 127.0.0.1:7001 --mode raw-tls --port 7002",
-    "start-2": "node ./dist/app.js start --forwardTo 127.0.0.1:1337 --mode tls-raw --port 7001"
+    "start": "npm run build & node --inspect ./dist/app.js start --forwardTo 0.0.0.0:2000 --mode tls-raw"
   },
   "repository": {
     "type": "git",
