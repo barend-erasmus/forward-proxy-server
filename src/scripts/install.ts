@@ -8,7 +8,7 @@ const readlineInterface: readline.ReadLine = readline.createInterface({
 });
 
 export async function install(): Promise<void> {
-    const forwardTo: string = await prompt('Forward To:: ');
+    const forwardTo: string = await prompt('Forward To: ');
 
     const hostname: string = await prompt('Hostname: (0.0.0.0): ');
 
