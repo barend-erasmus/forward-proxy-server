@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as tls from 'tls';
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
+import { Connection } from '../connection';
 
 export function start(
     forwardTo: string,
@@ -28,92 +29,43 @@ export function start(
     const forwardToPort: number = parseInt(forwardTo.split(':')[1], 10);
 
     switch (mode) {
+        case 'raw-raw':
         case 'raw-tls':
-            rawToTLS(forwardToHostname, forwardToPort, hostname, port);
+            rawServer(forwardToHostname, forwardToPort, hostname, mode, port);
             break;
         case 'tls-raw':
-            tlsToRaw(forwardToHostname, forwardToPort, hostname, port);
+        case 'tls-tls':
+            tlsServer(forwardToHostname, forwardToPort, hostname, mode, port);
             break;
     }
 }
 
-function rawToTLS(forwardToHostname: string, forwardToPort: number, hostname: string, port: number): void {
-    const socketOutput: tls.TLSSocket = tls.connect(forwardToPort, {
-        host: forwardToHostname,
-        passphrase: 'password',
-        pfx: fs.readFileSync('example.pfx'),
-    }, () => {
-        console.log(socketOutput.authorized);
-
-        winston.info(`Connected to destination`);
+function rawServer(forwardToHostname: string, forwardToPort: number, hostname: string, mode: string, port: number): void {
+    const server: net.Server = net.createServer((socket: net.Socket) => {
+        const connection: Connection = new Connection(socket, forwardToHostname, forwardToPort, mode);
     });
-
-    const serverInput: net.Server = net.createServer((socketInput: net.Socket) =>
-        onConnection(
-            socketInput,
-            socketOutput,
-        ));
 
     hostname = hostname ? hostname : '0.0.0.0';
     port = port ? port : 1337;
 
-    serverInput.listen(port, hostname, () => {
+    server.listen(port, hostname, () => {
         winston.info(`Listening on ${hostname}:${port}`);
     });
 }
 
-function tlsToRaw(forwardToHostname: string, forwardToPort: number, hostname: string, port: number): void {
-    // const socketOutput = new net.Socket();
-
-    // socketOutput.connect(forwardToPort, forwardToHostname, () => { });
-
-    const serverInput: tls.Server = tls.createServer({
+function tlsServer(forwardToHostname: string, forwardToPort: number, hostname: string, mode: string, port: number): void {
+    const server: tls.Server = tls.createServer({
         passphrase: 'password',
         pfx: fs.readFileSync('example.pfx'),
-        // rejectUnauthorized: true,
-    }, (socketInput: net.Socket) =>
-            onConnection(
-                socketInput,
-                null, // socketOutput,
-            ));
+        rejectUnauthorized: false,
+    }, (socket: net.Socket) => {
+        const connection: Connection = new Connection(socket, forwardToHostname, forwardToPort, mode);
+    });
 
     hostname = hostname ? hostname : '0.0.0.0';
     port = port ? port : 1337;
 
-    serverInput.listen(port, hostname, () => {
+    server.listen(port, hostname, () => {
         winston.info(`Listening on ${hostname}:${port}`);
     });
-}
-
-function onConnection(
-    socketInput: net.Socket | tls.TLSSocket,
-    socketOutput: net.Socket | tls.TLSSocket,
-): void {
-    if (socketInput) {
-        socketInput.on('data', (data: Buffer) => {
-            winston.info(`Client sending data`, {
-                bytes: data.length,
-                clientAddress: socketInput.remoteAddress,
-                clientPort: socketInput.remotePort,
-            });
-
-            if (socketOutput) {
-                socketOutput.write(data);
-            }
-        });
-    }
-
-    if (socketOutput) {
-        socketOutput.on('data', (data: Buffer) => {
-            winston.info(`Client receiving data`, {
-                bytes: data.length,
-                clientAddress: socketInput.remoteAddress,
-                clientPort: socketInput.remotePort,
-            });
-
-            if (socketInput) {
-                socketInput.write(data);
-            }
-        });
-    }
 }
