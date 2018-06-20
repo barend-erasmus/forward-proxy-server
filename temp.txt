@@ -1,0 +1,1 @@
+./openssl.exe req -newkey rsa:2048 -nodes -keyout C:\\temp\\key.pem -x509 -out C:\\temp\\certificate.pem

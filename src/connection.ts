@@ -79,11 +79,21 @@ export class Connection {
     protected connectToDestinationTLS(): void {
         this.destinationSocket = tls.connect(this.forwardToPort, {
             host: this.forwardToHostname,
-            passphrase: 'password',
-            pfx: fs.readFileSync(path.join(__dirname, '..', 'example.pfx')),
             rejectUnauthorized: false,
         }, () => {
             this.onDestinationConnection(null);
+        });
+
+        this.destinationSocket.on('error', (error: Error) => {
+            winston.info(`Destination failed`, {
+                clientAddress: this.clientAddress,
+                clientPort: this.clientPort,
+                destinationAddress: this.forwardToHostname,
+                destinationPort: this.forwardToPort,
+                error,
+            });
+
+            this.close();
         });
     }
 
@@ -138,18 +148,6 @@ export class Connection {
             });
 
             this.clientSocket.write(data);
-        });
-
-        this.destinationSocket.on('error', (error: Error) => {
-            winston.info(`Destination failed`, {
-                clientAddress: this.clientAddress,
-                clientPort: this.clientPort,
-                destinationAddress: this.forwardToHostname,
-                destinationPort: this.forwardToPort,
-                error,
-            });
-
-            this.close();
         });
     }
 
