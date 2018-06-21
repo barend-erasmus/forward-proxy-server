@@ -19,6 +19,18 @@ export class ForwardProxyServer extends ProxyServer<net.Server | tls.Server> {
     ) {
         super(hostname, log, port);
 
+        if (!this.forwardToHostname) {
+            this.forwardToHostname = '127.0.0.1';
+        }
+
+        if (!this.forwardToPort) {
+            this.forwardToPort = 8080;
+        }
+
+        if (!this.mode) {
+            this.mode = 'raw-raw';
+        }
+
         this.buffers = {};
     }
 

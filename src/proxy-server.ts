@@ -16,6 +16,14 @@ export abstract class ProxyServer<T extends any> implements IProxyServer {
         protected log: string,
         protected port: number,
     ) {
+        if (!this.hostname) {
+            this.hostname = '0.0.0.0';
+        }
+
+        if (!this.port) {
+            this.port = 1337;
+        }
+
         this.initializeLogger();
     }
 

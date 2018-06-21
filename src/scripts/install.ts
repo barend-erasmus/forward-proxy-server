@@ -8,23 +8,23 @@ const readlineInterface: readline.ReadLine = readline.createInterface({
 });
 
 export async function install(): Promise<void> {
-    const forwardTo: string = await prompt('Forward To: ');
+    const forwardTo: string = await prompt('Forward To (127.0.0.1:8080): ');
 
     const hostname: string = await prompt('Hostname: (0.0.0.0): ');
 
     const log: string = await prompt('Log: (/var/log/forward-proxy-server) ');
 
-    const mode: string = await prompt('Mode: (raw-tls) ');
+    const mode: string = await prompt('Mode: (raw-raw) ');
 
     const port: string = await prompt('Port: (1337): ');
 
     readlineInterface.close();
 
     const configuration: any = {
-        forwardTo,
-        hostname: hostname ? hostname : '0.0.0.0',
-        log: log ? log : '/var/log/forward-proxy-server',
-        mode: mode ? mode : 'raw-tls',
+        forwardTo: forwardTo || '127.0.0.1:8080',
+        hostname: hostname || '0.0.0.0',
+        log: log || '/var/log/forward-proxy-server',
+        mode: mode || 'raw-raw',
         port: port ? parseInt(port, 10) : 1337,
     };
 
