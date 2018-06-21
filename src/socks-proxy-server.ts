@@ -14,6 +14,8 @@ import { ProxyServer } from './proxy-server';
 
 export class SOCKSProxyServer extends ProxyServer<net.Server> {
 
+    protected buffers: {} = null;
+
     protected socksProxyStates: {} = null;
 
     constructor(
@@ -22,21 +24,40 @@ export class SOCKSProxyServer extends ProxyServer<net.Server> {
         protected deniedIPAddresses: string[],
         hostname: string,
         log: string,
-        protected mode: string,
         port: number,
         protected requiresUsernamePasswordAuthentication: boolean,
     ) {
         super(hostname, log, port);
 
+        this.buffers = {};
+
         this.socksProxyStates = {};
     }
 
     protected createServer(onConnectionFn: (socket: net.Socket) => void): net.Server {
-        return null;
+        const server: net.Server = net.createServer((socket: net.Socket) => onConnectionFn(socket));
+
+        return server;
     }
 
     protected createDestinationSocket(destinationHostname: string, destinationPort: number, sourceSocket: net.Socket): net.Socket {
-        return null;
+        const destinationSocket: net.Socket = net.connect(destinationPort, destinationHostname, (error: Error) => {
+            this.handleSocketError(error, destinationSocket);
+
+            if (error) {
+                return;
+            }
+
+            if (this.buffers[sourceSocket['id']]) {
+                for (const buffer of this.buffers[sourceSocket['id']]) {
+                    destinationSocket.write(buffer);
+                }
+
+                this.buffers[sourceSocket['id']] = null;
+            }
+        });
+
+        return destinationSocket;
     }
 
     protected handleAuthenticationRequest(data: Buffer, sourceSocket: net.Socket): void {
@@ -193,7 +214,21 @@ export class SOCKSProxyServer extends ProxyServer<net.Server> {
             return new OnPreConnectionDataResult(false, null, null);
         }
 
+        this.saveToBuffer(data, sourceSocket);
+
         return new OnPreConnectionDataResult(true, socksProxyState.destinationHostname, socksProxyState.destinationPort);
+    }
+
+    protected saveToBuffer(data: Buffer, socket: net.Socket): void {
+        if (!socket['id']) {
+            return;
+        }
+
+        if (!this.buffers[socket['id']]) {
+            this.buffers[socket['id']] = [];
+        }
+
+        this.buffers[socket['id']].push(data);
     }
 
     protected sendConnectionResponse(addressType: number, connectionStatus: SOCKSProxyConnectionStatus, ipAddressBytes: number[], portBytes: number[], sourceSocket: net.Socket, version: number): void {

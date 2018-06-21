@@ -86,6 +86,8 @@ export abstract class ProxyServer<T extends any> implements IProxyServer {
 
         let destinationSocket: net.Socket | tls.TLSSocket = null;
 
+        let connected: boolean = false;
+
         sourceSocket.on('data', (data: Buffer) => {
             winston.info(`Receiving data`, {
                 bytes: data.length,
@@ -93,11 +95,11 @@ export abstract class ProxyServer<T extends any> implements IProxyServer {
                 sourcePort: sourceSocket.remotePort,
             });
 
-            if (!destinationSocket) {
+            if (!connected) {
                 const onPreConnectionDataResult: OnPreConnectionDataResult = this.onPreConnectionData(data, destinationSocket, sourceSocket);
-
                 if (onPreConnectionDataResult.connect) {
                     destinationSocket = this.connectToDestinationSocket(sourceSocket, onPreConnectionDataResult.destinationHostname, onPreConnectionDataResult.destinationPort);
+                    connected = true;
                 }
             } else {
                 destinationSocket.write(data);
@@ -139,9 +141,9 @@ export abstract class ProxyServer<T extends any> implements IProxyServer {
                 maxFiles: '30d',
                 maxSize: '20m',
             });
-
-            // winston.remove(winston.transports.Console);
         }
+
+        // winston.remove(winston.transports.Console);
     }
 
     protected abstract onPreConnectionData(data: Buffer, destinationSocket: net.Socket | tls.TLSSocket, sourceSocket: net.Socket | tls.TLSSocket): OnPreConnectionDataResult;

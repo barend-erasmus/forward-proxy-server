@@ -62,6 +62,8 @@ export class ForwardProxyServer extends ProxyServer<net.Server | tls.Server> {
                         destinationSocket.write(buffer);
                     }
                 }
+
+                this.buffers[sourceSocket['id']] = null;
             });
 
             return destinationSocket;
